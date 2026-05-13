@@ -1,6 +1,9 @@
 import React, { useCallback, useState } from 'react'
 import { signup } from '../../store/auth/authThunk';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { TbLoader3 } from 'react-icons/tb';
+import { useNavigate } from 'react-router-dom';
+import {toast} from 'sonner';
 
 const SignUp = () => {
 
@@ -11,7 +14,9 @@ const SignUp = () => {
     password: ""
   });
 
+  const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.auth);
 
   // Handle Input Change
   const handleInputChange = useCallback((e) => {
@@ -32,22 +37,23 @@ const SignUp = () => {
     const { username, email, contact, password } = formData;
 
     if (!username || !email || !contact || !password) {
-      alert("Please fill your all credentials");
+      toast.warning("Please fill your all credentials");
       return;
     }
 
     try {
       await dispatch(signup(formData)).unwrap();
-      alert("SignUp successful");
+      toast.success("SignUp successful");
       setFormData({
         username: "",
         email: "",
         contact: "",
         password: ""
       })
+      navigate("/profile")
     } catch (error) {
       console.log(error);
-      alert(error.message);
+      toast.error(error.message);
     }
   }
 
@@ -103,10 +109,14 @@ const SignUp = () => {
           />
 
           <button
-            type='submit'
-            className='w-full bg-purple-600 hover:bg-purple-700 transition-all duration-300 text-white py-3 rounded-xl font-semibold shadow-lg'
+            type="submit"
+            className="w-full bg-purple-600 hover:bg-purple-700 transition-all duration-300 text-white py-3 rounded-xl font-semibold shadow-lg flex justify-center items-center"
           >
-            Register
+            {loading ? (
+              <TbLoader3 className="h-5 w-5 animate-spin" />
+            ) : (
+              "Register"
+            )}
           </button>
 
         </div>
