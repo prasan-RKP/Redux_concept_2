@@ -1,13 +1,18 @@
 import express from "express";
-import User from "../model/userModel";
+import User from "../model/userModel.js";
 import bcryptjs from "bcryptjs";
-import { createToken } from "../lib/webToken";
+import { createToken } from "../lib/webToken.js";
+import { protectedRoute } from "../middleware/middleware.js";
 
 const router = express.Router();
 
 router.get("/hello", (req, res) => {
   console.log("🔥 HELLO HIT");
   res.send("Hello route hit!");
+});
+
+router.get("/me", protectedRoute, async (req, res) => {
+  res.status(200).json(req.user); // ✅ use req.user, no extra DB call needed
 });
 
 router.post("/login", async (req, res) => {
@@ -46,16 +51,18 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.post("/signup", async(req, res) => {
-  const {username, email, contact, password} = req.body;
+router.post("/signup", async (req, res) => {
+  const { username, email, contact, password } = req.body;
 
-  if(!username || !email || !contact || !password) return res.status(400).json({message: "Please fill all credentials"});
+  if (!username || !email || !contact || !password)
+    return res.status(400).json({ message: "Please fill all credentials" });
 
   try {
     // step-1 : check is user-already registered or not
-    const user = await User.findOne({email});
+    const user = await User.findOne({ email });
 
-    if(user) return res.status(400).json({message: "User already registered"});
+    if (user)
+      return res.status(400).json({ message: "User already registered" });
 
     // step - 2: make the password to hashedPassword
     const hashedPassword = await bcryptjs.hash(password, 10);
@@ -66,7 +73,6 @@ router.post("/signup", async(req, res) => {
       email,
       contact,
       password: hashedPassword,
-
     });
 
     // step - 4: create token
@@ -81,12 +87,20 @@ router.post("/signup", async(req, res) => {
       username: newUser.username,
       email: newUser.email,
       contact: newUser.contact,
-    })
+    });
   } catch (error) {
     console.error("Signup error:", error);
-     return res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
+});
 
-})
+router.post("/logout", async (req, res) => {
+  try {
+    res.cookie("jwt", "", { maxAge: 0 });
+    return res.status(200).json({ message: "Logout Successfully ✅" });
+  } catch (error) {
+    return res.status(404).json({ message: "Internal Server Error" });
+  }
+});
 
 export default router;
