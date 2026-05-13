@@ -24,3 +24,15 @@ export const logoutUser = async () => {
   const response = await axiosInstance.post("/logout");
   return response.data;
 };
+
+// ------- Cart Logic  is from here -----
+
+export const fetchUserCart = async () => {
+  const response = await axiosInstance.get("/cart");
+  return response.data.carts;
+}
+
+export const addToCart = async (cartData) => {
+  const response = await axiosInstance.post("/addToCart", cartData);
+  return response.data.carts;
+}

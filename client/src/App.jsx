@@ -18,13 +18,21 @@ import Form from "./java/Form";
 
 import { checkAuth } from "../src/store/auth/authThunk.js";
 
+import { Toaster } from "sonner";
+
+import Products from "./Projects/Project1/Products.jsx";
+import AddToCart from "./Projects/Project1/AddToCart.jsx";
+
 
 // -------- Protected Route --------
 
 const ProtectedRoute = ({ children }) => {
-  const { user, isCheckingAuth } = useSelector((state) => state.auth);
 
- // Prevent instant redirect to /signup during page refresh
+  const { user, isCheckingAuth } = useSelector(
+    (state) => state.auth
+  );
+
+  // Prevent instant redirect during refresh
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center text-2xl font-bold">
@@ -33,7 +41,7 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  // If not logged in
+  // Not logged in
   if (!user) {
     return <Navigate to="/signup" replace />;
   }
@@ -41,7 +49,35 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+
+// -------- Public Route --------
+
+const PublicRoute = ({ children }) => {
+
+  const { user, isCheckingAuth } = useSelector(
+    (state) => state.auth
+  );
+
+  // Prevent flickering during auth check
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-2xl font-bold">
+        Loading...
+      </div>
+    );
+  }
+
+  // Already logged in
+  if (user) {
+    return <Navigate to="/profile" replace />;
+  }
+
+  return children;
+};
+
+
 const App = () => {
+
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -49,68 +85,113 @@ const App = () => {
   }, [dispatch]);
 
   return (
-    <Routes>
+    <>
 
-      {/* Public Routes */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<SignUp />} />
+      <Routes>
 
-      {/* Protected Routes */}
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <ProfilePage />
-          </ProtectedRoute>
-        }
+        {/* -------- Public Routes -------- */}
+
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+
+        <Route
+          path="/signup"
+          element={
+            <PublicRoute>
+              <SignUp />
+            </PublicRoute>
+          }
+        />
+
+
+        {/* -------- Protected Routes -------- */}
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/todo"
+          element={
+            <ProtectedRoute>
+              <Todo />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/note"
+          element={
+            <ProtectedRoute>
+              <NoteDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/add-note"
+          element={
+            <ProtectedRoute>
+              <AddNote />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/see-note"
+          element={
+            <ProtectedRoute>
+              <SeeNotes />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/practice"
+          element={
+            <ProtectedRoute>
+              <Form />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/products"
+          element={
+            <ProtectedRoute>
+              <Products />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/addcart"
+          element={
+            <ProtectedRoute>
+              <AddToCart />
+            </ProtectedRoute>
+          }
+        />
+
+      </Routes>
+
+      <Toaster
+        position="top-right"
+        richColors={true}
       />
 
-      <Route
-        path="/todo"
-        element={
-          <ProtectedRoute>
-            <Todo />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/note"
-        element={
-          <ProtectedRoute>
-            <NoteDashboard />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/add-note"
-        element={
-          <ProtectedRoute>
-            <AddNote />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/see-note"
-        element={
-          <ProtectedRoute>
-            <SeeNotes />
-          </ProtectedRoute>
-        }
-      />
-
-      <Route
-        path="/practice"
-        element={
-          <ProtectedRoute>
-            <Form />
-          </ProtectedRoute>
-        }
-      />
-
-    </Routes>
+    </>
   );
 };
 

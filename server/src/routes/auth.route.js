@@ -103,4 +103,78 @@ router.post("/logout", async (req, res) => {
   }
 });
 
+router.post("/addToCart", protectedRoute, async (req, res) => {
+  const { uid, desc, img, price, qty } = req.body;
+
+  if (!uid || !desc || !img || !price || !qty) {
+    return res.status(400).json({ message: "Product Not Found !" });
+  }
+
+  try {
+    let userId = req.user?._id;
+    if (!userId) return res.status(400).json({ message: "UnAuthorized User" });
+    let loggedInUser = await User.findById(userId);
+
+    if (!loggedInUser) {
+      return res.status(404).json({
+        message: "User Not Found",
+      });
+    }
+
+    // step - 2 (if the item already exists or not)
+    const existingIndex = loggedInUser.carts.findIndex(
+      (item) => item.uid === Number(uid),
+    );
+
+    // step - 3 (if already exist return error or push and store )
+    if (existingIndex !== -1) {
+      return res.status(400).json({ message: "Product already in cart 🛍️" });
+    }
+
+    // Add to cart
+    loggedInUser.carts.push({
+      uid: Number(uid),
+      image: img,
+      quantity: 1,
+      price: Number(price),
+      desc: desc.trim(),
+    });
+
+    await loggedInUser.save();
+    return res
+      .status(200)
+      .json({ message: "Product Added To Cart 🛒", carts: loggedInUser.carts });
+  } catch (error) {
+    return res.status(404).json({ message: "Internal Server Error" });
+  }
+});
+
+router.get("/cart", protectedRoute, async (req, res) => {
+  try {
+    const userId = req.user?._id;
+
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized User",
+      });
+    }
+
+    const loggedInUser = await User.findById(userId);
+
+    if (!loggedInUser) {
+      return res.status(404).json({
+        message: "User Not Found",
+      });
+    }
+
+    return res.status(200).json({
+      carts: loggedInUser.carts,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+});
+
 export default router;

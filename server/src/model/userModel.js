@@ -24,6 +24,34 @@ const userSchema = new mongoose.Schema({
     required: true,
     minLength: 5,
   },
+
+  carts: [
+    {
+      uid: {
+        type: Number,
+        required: true,
+      },
+
+      desc: {
+        type: String,
+        required: true,
+      },
+      image: {
+        type: String,
+        required: true,
+      },
+
+      quantity: {
+        type: Number,
+        required: true,
+      },
+
+      price: {
+        type: Number,
+        required: true,
+      },
+    },
+  ],
 });
 
 const User = mongoose.model("User", userSchema);

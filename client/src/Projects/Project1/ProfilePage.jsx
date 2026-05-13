@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '../../hooks/useAuth.js';
 import { Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -14,6 +14,7 @@ const ProfilePage = () => {
         return <Navigate to={"/signup"} replace />;
     }
 
+    const [products, setProducts] = useState([]);
     const dispatch = useDispatch();
     const { loading, error } = useSelector((state) => state.auth);
 
@@ -21,10 +22,29 @@ const ProfilePage = () => {
         try {
             await dispatch(logout()).unwrap();
         } catch (err) {
-            console.log(err.message);
-            toast.error(err.message);
+            toast.error(err);
+            console.log(err);
         }
     }, []);
+
+    // Adding feature to test productsAPI
+    useEffect(() => {
+
+        const fetchProducts = async () => {
+            try {
+                const res = await fetch("https://dummyjson.com/products");
+                const data = await res.json();
+                setProducts(data.products);
+            } catch (error) {
+                console.log(error);
+            }
+        };
+
+        fetchProducts();
+
+    }, []);
+
+    console.log(products);
 
 
 
